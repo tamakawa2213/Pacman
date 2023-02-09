@@ -30,7 +30,7 @@ Character::Character(GameObject* parent)
 }
 
 Character::Character(GameObject* parent, std::string name)
-    : GameObject(parent, name), hModel_(-1), move_(0.1f), front_{ 0,0,1,0 }, checkZ_(0.3f), pStage(nullptr), vMove()
+    : GameObject(parent, name), hModel_(-1), move_(0.1f), front_{ 0,0,1,0 }, checkZ_(0.3f), pStage(nullptr), vMove(), intPosX(0), intPosZ(0)
 {
 }
 
@@ -55,8 +55,13 @@ void Character::Initialize()
         transform_.position_.x = 8.5f;
         transform_.position_.z = 1.5f;
     }
+    intPosX = (int)((transform_.position_.x + 0.5f) * 10);
+    intPosZ = (int)((transform_.position_.z - 0.5f) * 10);
+
     pStage = (Stage*)FindObject("Stage");
     assert(pStage != nullptr);
+
+    InitChild();
 }
 
 //çXêV
@@ -131,6 +136,9 @@ void Character::Update()
         //è„ïî
         transform_.position_.z = (float)((int)(transform_.position_.z + 0.5f)) - 0.3f;
     }
+
+    intPosX = (int)((transform_.position_.x + 0.5f) * 10);
+    intPosZ = (int)((transform_.position_.z - 0.5f) * 10);
 
 }
 

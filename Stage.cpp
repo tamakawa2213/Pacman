@@ -20,6 +20,7 @@ void Stage::Initialize()
 	hModel_[1] = Model::Load("Assets\\Wall.fbx");//1‚È‚ç•Ç
 	assert(hModel_[1] >= 0);
 
+	//transform_.scale_ = { 10,1,10 };
 	csv.Load("Assets\\Map.csv");
 }
 

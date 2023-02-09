@@ -20,6 +20,11 @@ protected:
     void GoLeft();
     void GoRight();
 
+    virtual void InitChild(){}
+
+    int intPosX;
+    int intPosZ;
+
 public:
     //コンストラクタ
     Character(GameObject* parent);

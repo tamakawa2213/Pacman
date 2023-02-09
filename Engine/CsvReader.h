@@ -50,5 +50,7 @@ public:
 	//引数：なし
 	//戻値：行数
 	size_t GetHeight();
+
+	std::vector<std::vector<std::string>> GetData() { return data_; }
 };
 

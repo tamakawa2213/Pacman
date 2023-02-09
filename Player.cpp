@@ -30,6 +30,7 @@ void Player::Input()
 Player::Player(GameObject* parent)
 	:Character(parent, "Player")
 {
+    PlayerState::SetPlayerPosition(transform_.position_);
 }
 
 Player::~Player()

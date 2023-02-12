@@ -5,6 +5,7 @@
 void Player::Input()
 {
     PlayerState::SetPlayerPosition(transform_.position_);
+    PlayerState::SetPlayerPosition(intPosX, intPosZ);
 
     //‘€ìawsd‚Æã‰º¶‰EƒL[‚Ì‚Ç‚¿‚ç‚Å‚à‰Â
    if (Input::IsKey(DIK_UP) || Input::IsKey(DIK_W))

@@ -25,5 +25,7 @@ public:
 
 	//ï«orè∞
 	bool IsWall(float x, float z);
+
+	int GetModelWall() { return hModel_[1]; }
 };
 

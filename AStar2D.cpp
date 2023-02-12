@@ -83,6 +83,8 @@ void AStar2D::Initialize()
 
 void AStar2D::Adjacent(Move next)
 {
+	std::list<std::pair<int, int>> ex;
+	ex.clear();
 	totalMove_++;
 	bool IsSearched = false;
 	for (Move Dir : Direction)	//現在位置に隣り合っている4地点にコストを割り振っていく
@@ -109,11 +111,13 @@ void AStar2D::Adjacent(Move next)
 				ppCost_[nextW][nextH] = GetDistance(nextpos) + totalMove_;
 
 				//ゴールならば探索終了
-				if (GetDistance(nextpos) < 0.5f)
+				if (GetDistance(nextpos) < 0.1f)
 				{
+					Explored_.push_back({ next.moveLR, next.moveHL });
 					return;
 				}
 				IsSearched = true;
+				ex.push_back(nextpos);
 			}
 		}
 	}
@@ -127,7 +131,7 @@ void AStar2D::Adjacent(Move next)
 	//4点の少なくとも1つ以上探索ができた場合、その中でコストが最も小さい位置に移動する
 	if (IsSearched)
 	{
-		for (auto itr = Unexplored_.begin(); itr != Unexplored_.end(); itr++)
+		for (auto itr = ex.begin(); itr != ex.end(); itr++)
 		{
 			if (ppCost_[(*itr).first][(*itr).second] < Min.first && ppCost_[(*itr).first][(*itr).second] > 0)
 			{
@@ -151,7 +155,14 @@ void AStar2D::Adjacent(Move next)
 		}
 	}
 
-	if (Min.first != CostMax_)
+	ex.clear();
+
+	if ((int)Min.second.first == 0 && (int)Min.second.second == 0)
+	{
+		return;
+	}
+
+	//if (Min.first != CostMax_)
 	{
 		Adjacent({ (int)Min.second.first, (int)Min.second.second });
 	}
@@ -167,19 +178,31 @@ void AStar2D::Route(std::pair<int, int> pos)
 		int nextW = pos.first + Dir.moveLR;
 		int nextH = pos.second + Dir.moveHL;
 
-		if (std::pair<int, int>(nextW, nextH) == Start_)
+		auto itr = std::find(Explored_.begin(), Explored_.end(), std::pair<int, int>(nextW, nextH));
+		if (itr != Explored_.end())
 		{
-			return;
-		}
+			if (std::pair<int, int>(nextW, nextH) == Start_)
+			{
+				Routelist_.push_back(std::pair<int, int>(nextW, nextH));
+				return;
+			}
 
-		//隣り合う要素で最もコストが低い要素を選択する
-		if(nextW >= 0 && nextH >= 0)
-		if (ppCost_[nextW][nextH] < necos && ppCost_[nextW][nextH] >= 0)
-		{
-			necos = ppCost_[nextW][nextH];
-			next = std::pair<int, int>(nextW, nextH);
+			//隣り合う要素で最もコストが低い要素を選択する
+			if (nextW >= 0 && nextH >= 0)
+				if (ppCost_[nextW][nextH] < necos && ppCost_[nextW][nextH] >= 0)
+				{
+					necos = ppCost_[nextW][nextH];
+					next = std::pair<int, int>(nextW, nextH);
+				}
+			Explored_.erase(itr);
 		}
 	}
+
+	//同一の要素が発見された場合、ルート検索を終了する
+	auto itr = std::find(Routelist_.begin(), Routelist_.end(), next);
+	if (itr != Routelist_.end())
+		return;
+
 	Routelist_.push_back(next);
 	Route(next);
 }
@@ -187,4 +210,23 @@ void AStar2D::Route(std::pair<int, int> pos)
 void AStar2D::GetRoute(std::list<std::pair<int, int>>& Routelist)
 {
 	memcpy_s(&Routelist, std::size(Routelist_), &Routelist_, std::size(Routelist_));
+}
+
+void AStar2D::Reset()
+{
+	Unexplored_.clear();
+	for (int x = 0; x < MapSize_; x++)
+	{
+		for (int z = 0; z < MapSize_; z++)
+		{
+			ppCost_[x][z] = CostMax_;
+			if (MapData_[x][z] == 1)
+			{
+				ppCost_[x][z] = -1;
+			}
+			Unexplored_.push_back({ x,z });
+		}
+	}
+	Explored_.clear();
+	Routelist_.clear();
 }

@@ -47,6 +47,6 @@ public:
 	void Adjacent(Move next);
 	void Route(std::pair<int, int> pos);
 	void GetRoute(std::list<std::pair<int, int>>& Routelist);
-	void Reset() { Unexplored_.clear(); Explored_.clear(); Routelist_.clear(); }
+	void Reset();
 	std::list<std::pair<int, int>> GetRoute() { return Routelist_; }
 };

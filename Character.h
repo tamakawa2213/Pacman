@@ -7,11 +7,9 @@ class Stage;
 class Character : public GameObject
 {
     int hModel_;    //モデル番号
-    float move_;    //移動速度
     XMVECTOR front_;//奥向きのベクトル
-    Stage* pStage;
     float checkZ_;
-    XMVECTOR vMove;
+    //XMVECTOR vMove;
 
 protected:
     virtual void Input() = 0;
@@ -22,6 +20,9 @@ protected:
 
     virtual void InitChild(){}
 
+    Stage* pStage;
+    float move_;    //移動速度
+    float movingDist_;
     int intPosX;
     int intPosZ;
 

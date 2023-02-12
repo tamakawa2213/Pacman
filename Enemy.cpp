@@ -1,93 +1,101 @@
 #include "Enemy.h"
 #include "AStar2D.h"
 #include "Engine/CsvReader.h"
-//#include "Engine/Math.h"
+#include "Engine/Math.h"
 #include "PlayerState.h"
+#include "Stage.h"
+
+namespace
+{
+    const XMVECTOR sight = { 0,0,1,0 };		//視線ベクトル
+    const float Visibility = 7;				//視程
+    const float SightWidth = 0.5f;				//視界の広さ
+}
 
 void Enemy::Input()
 {
-    if (++Count_ > (rand() % 60))
+    CalcInSight();
+
+    if (Count_++ >= 16)
     {
-        //if (rand() % 100 > 50)
-        //{
-        //    pAst_->Reset();
-        //    pAst_->SetStart({ intPosX / 10, intPosZ / 10 });
-        //    pAst_->SetGoal({ (int)PlayerState::GetPlayerPosition().x, (int)PlayerState::GetPlayerPosition().z });
-        //    pAst_->Adjacent(Move{ intPosX / 10, intPosZ / 10 });
-        //    std::pair<int, int> route;
-        //    pAst_->Route({ intPosX / 10, intPosZ / 10 });
-        //    route = pAst_->GetRoute().front();
 
-        //    //対象と自身の位置関係を計算
-        //    XMFLOAT3 p = PlayerState::GetPlayerPosition();
-        //    XMVECTOR pPos = XMLoadFloat3(&p);
-        //    XMVECTOR mPos = XMLoadFloat3(&transform_.position_);
-        //    XMVECTOR rPos = pPos - mPos;
+        if (Discover_ || !route_.empty())
+            Chase();
+        else
+            Search();
 
-        //    if ((fabsf(XMVectorGetX(rPos)) < fabsf(XMVectorGetZ(rPos))) ^ (rand() % 100 > 50))
-        //    {
-        //        if (route.first > intPosX / 10)
-        //        {
-        //            GoRight();
-        //        }
-        //        else if (route.first < intPosX / 10)
-        //        {
-        //            GoLeft();
-        //        }
-        //    }
-        //    else if((fabsf(XMVectorGetX(rPos)) > fabsf(XMVectorGetZ(rPos))) ^ (rand() % 100 < 50))
-        //    {
-        //        if (route.second > intPosZ / 10)
-        //        {
-        //            GoAbove();
-        //        }
-        //        else if (route.second < intPosZ / 10)
-        //        {
-        //            GoUnder();
-        //        }
-        //    }
-        //}
-        //else
-        {
-            //対象と自身の位置関係を計算
-            XMFLOAT3 p = PlayerState::GetPlayerPosition();
-            XMVECTOR pPos = XMLoadFloat3(&p);
-            XMVECTOR mPos = XMLoadFloat3(&transform_.position_);
-            XMVECTOR rPos = pPos - mPos;
-
-            int proportion = (int)((fabsf(XMVectorGetX(rPos)) / (fabsf(XMVectorGetX(rPos)) + fabsf(XMVectorGetZ(rPos)))) * 100);
-
-            if ((fabsf(XMVectorGetX(rPos)) < fabsf(XMVectorGetZ(rPos))) ^ (rand() % 100 < proportion))
-            {
-                if (XMVectorGetX(rPos) > 0)
-                {
-                    GoRight();
-                }
-                else
-                {
-                    GoLeft();
-                }
-            }
-            else
-            {
-                if (XMVectorGetZ(rPos) > 0)
-                {
-                    GoAbove();
-                }
-                else
-                {
-                    GoUnder();
-                }
-            }
-
-        }
 
         Count_ = 0;
     }
+
+   
 }
 
 void Enemy::Search()
 {
+    if (rand() % 128 <= 16)
+    {
+        if (rand() % 2 == 0)
+            transform_.rotate_.y += 90;
+        else
+            transform_.rotate_.y -= 90;
+
+        return;
+    }
+
+    if (movingDist_ <= 0)
+    {
+        if (rand() % 2 == 0)
+            transform_.rotate_.y += 90;
+        else
+            transform_.rotate_.y -= 90;
+    }
+}
+
+void Enemy::Chase()
+{
+    if (Math::GetDistance(PlayerState::GetPlayerPosition(), transform_.position_) > 10)
+    {
+        route_.clear();
+    }
+
+    if (Discover_)
+    {
+        route_.clear();
+        pAst_->Reset();
+        pAst_->SetStart({ intPosX, intPosZ });
+        pAst_->SetGoal({ PlayerState::GetPlayerPositionX(), PlayerState::GetPlayerPositionZ() });
+        pAst_->Adjacent(Move{ intPosX, intPosZ });
+        pAst_->Route({ PlayerState::GetPlayerPositionX(), PlayerState::GetPlayerPositionZ() });
+        route_ = pAst_->GetRoute();
+        route_.pop_back();
+
+    }
+
+    if (!route_.empty())
+    {
+        {
+            if (route_.back().first > intPosX)
+            {
+                GoRight();
+            }
+            else if (route_.back().first < intPosX)
+            {
+                GoLeft();
+            }
+        }
+        {
+            if (route_.back().second > intPosZ)
+            {
+                GoAbove();
+            }
+            else if (route_.back().second < intPosZ)
+            {
+                GoUnder();
+            }
+        }
+        route_.pop_back();
+    }
 }
 
 void Enemy::InitChild()
@@ -118,11 +126,44 @@ void Enemy::InitChild()
 }
 
 Enemy::Enemy(GameObject* parent)
-    :Character(parent, "Enemy"), pAst_(nullptr), Count_(0)
+    :Character(parent, "Enemy"), pAst_(nullptr), Count_(0), Discover_(false), PrevIntX_(0), PrevIntZ_(0)
 {
+    route_.clear();
 }
 
 Enemy::~Enemy()
 {
     SAFE_DELETE(pAst_);
+}
+
+void Enemy::CalcInSight()
+{
+    //視線ベクトルをtransformに合わせて回転
+    XMMATRIX mRotate = XMMatrixRotationY(XMConvertToRadians(transform_.rotate_.y));
+    XMVECTOR s = XMVector3Normalize(XMVector3TransformCoord(sight, mRotate));
+
+    //playerとの距離と内積を測定
+    XMFLOAT3 pl = PlayerState::GetPlayerPosition();
+    XMVECTOR p = XMVector3Normalize(XMLoadFloat3(&pl) - XMLoadFloat3(&transform_.position_));
+    float l = XMVectorGetX(XMVector3Dot(s, p));
+
+    //視線ベクトルとplayerの内積と距離から発見状態かどうかを判定
+    if (l > SightWidth && Math::GetDistance(transform_.position_, pl) < Visibility)
+    {
+        if (!Discover_ && route_.empty())
+        {
+            pAst_->Reset();
+            pAst_->SetStart({ intPosX, intPosZ });
+            pAst_->SetGoal({ PlayerState::GetPlayerPositionX(), PlayerState::GetPlayerPositionZ() });
+            pAst_->Adjacent(Move{ intPosX, intPosZ });
+            pAst_->Route({ PlayerState::GetPlayerPositionX(), PlayerState::GetPlayerPositionZ() });
+            route_ = pAst_->GetRoute();
+        }
+        Discover_ = true;
+    }
+    else
+    {
+        Discover_ = false;
+    }
+
 }

@@ -5,22 +5,26 @@
 
 void Character::GoAbove()
 {
-    vMove = {0, 0, move_, 0};
+    //vMove = {0, 0, move_, 0};
+    transform_.rotate_.y = 0;
 }
 
 void Character::GoUnder()
 {
-    vMove = {0, 0, -move_, 0};
+    //vMove = {0, 0, -move_, 0};
+    transform_.rotate_.y = 180.0f;
 }
 
 void Character::GoLeft()
 {
-    vMove = {-move_, 0, 0, 0};
+    //vMove = {-move_, 0, 0, 0};
+    transform_.rotate_.y = -90.0f;
 }
 
 void Character::GoRight()
 {
-    vMove = {move_, 0, 0, 0};
+    //vMove = {move_, 0, 0, 0};
+    transform_.rotate_.y = 90.0f;
 }
 
 //コンストラクタ
@@ -30,7 +34,8 @@ Character::Character(GameObject* parent)
 }
 
 Character::Character(GameObject* parent, std::string name)
-    : GameObject(parent, name), hModel_(-1), move_(0.1f), front_{ 0,0,1,0 }, checkZ_(0.3f), pStage(nullptr), vMove(), intPosX(0), intPosZ(0)
+    : GameObject(parent, name), hModel_(-1), move_(0.0625f), front_{ 0,0,1,0 }, checkZ_(0.3f), pStage(nullptr), intPosX(0), intPosZ(0),
+    movingDist_(0)
 {
 }
 
@@ -72,43 +77,35 @@ void Character::Update()
 
     Input();
 
-    vMove = XMVector3Normalize(vMove) * move_;
+    XMVECTOR vMove = { 0, 0, 1, 0 };
+    XMMATRIX mRotate = XMMatrixRotationY(XMConvertToRadians(transform_.rotate_.y));
+    vMove = XMVector3Normalize(XMVector3TransformCoord(vMove, mRotate)) * move_;
     XMStoreFloat3(&transform_.position_, prevPosition + vMove);
-    ////////////////////////////////////////////////////////回転処理////////////////////////////////////////////////////
 
-    //移動後の位置ベクトル
-    XMVECTOR nowPosition = prevPosition + vMove;
+    ////0.1以上移動してたら回転処理
+    //if (XMVectorGetY(length) >= 0.01f) {
 
-    //移動ベクトル
-    XMVECTOR move = nowPosition - prevPosition;
+    //    //移動ベクトルの正規化
+    //    move = XMVector3Normalize(move);
 
-    //移動ベクトルの長さの測定
-    XMVECTOR length = XMVector3Length(move);
+    //    //front_とmoveの内積を求める(戻り値はvector)
+    //    XMVECTOR vecDot = XMVector3Dot(front_, move);
+    //    float dot = XMVectorGetX(vecDot);
 
-    //0.1以上移動してたら回転処理
-    if (XMVectorGetY(length) >= 0.1f) {
+    //    //角度を求める(ラジアン)
+    //    float angle = acosf(dot);
 
-        //移動ベクトルの正規化
-        move = XMVector3Normalize(move);
+    //    //外積を求める
+    //    XMVECTOR cross = XMVector3Cross(front_, move);
 
-        //front_とmoveの内積を求める(戻り値はvector)
-        XMVECTOR vecDot = XMVector3Dot(front_, move);
-        float dot = XMVectorGetX(vecDot);
+    //    //外積の結果のyがマイナス (= 左に進んでる)
+    //    if (XMVectorGetY(cross) < 0) {
+    //        angle *= -1;
+    //    }
 
-        //角度を求める(ラジアン)
-        float angle = acosf(dot);
-
-        //外積を求める
-        XMVECTOR cross = XMVector3Cross(front_, move);
-
-        //外積の結果のyがマイナス (= 左に進んでる)
-        if (XMVectorGetY(cross) < 0) {
-            angle *= -1;
-        }
-
-        //angleで回転させる
-        transform_.rotate_.y = angle * 180 / 3.14f;
-    }
+    //    //angleで回転させる
+    //    transform_.rotate_.y = angle * 180 / 3.14f;
+    //}
 
     //////////////////////////////////////////////////////////壁との衝突判定//////////////////////////////////////////////////////
 
@@ -137,8 +134,19 @@ void Character::Update()
         transform_.position_.z = (float)((int)(transform_.position_.z + 0.5f)) - 0.3f;
     }
 
-    intPosX = (int)((transform_.position_.x + 0.5f) * 10);
-    intPosZ = (int)((transform_.position_.z - 0.5f) * 10);
+    //移動後の位置ベクトル
+    XMVECTOR nowPosition = XMLoadFloat3(&transform_.position_);
+
+    //移動ベクトル
+    XMVECTOR move = nowPosition - prevPosition;
+
+    //移動ベクトルの長さの測定
+    XMVECTOR length = XMVector3Length(move);
+
+    movingDist_ = XMVectorGetY(length);
+
+    intPosX = (int)(transform_.position_.x + 1);
+    intPosZ = (int)transform_.position_.z;
 
 }
 

@@ -16,7 +16,7 @@ void Enemy::Input()
 {
     CalcInSight();
 
-    if (Count_++ >= 16)
+    //if (Count_++ >= 16)
     {
 
         if (Discover_ || !route_.empty())
@@ -33,7 +33,7 @@ void Enemy::Input()
 
 void Enemy::Search()
 {
-    if (rand() % 128 <= 16)
+    if (rand() % 16 < 1)
     {
         if (rand() % 2 == 0)
             transform_.rotate_.y += 90;
@@ -54,47 +54,61 @@ void Enemy::Search()
 
 void Enemy::Chase()
 {
-    if (Math::GetDistance(PlayerState::GetPlayerPosition(), transform_.position_) > 10)
+    if (movingDist_ <= 0)
     {
-        route_.clear();
+        if (rand() % 2 == 0)
+            transform_.rotate_.y += 90;
+        else
+            transform_.rotate_.y -= 90;
+
+        return;
     }
 
-    if (Discover_)
+    if (intPosX != PrevIntX_ && intPosZ != PrevIntZ_)
     {
-        route_.clear();
-        pAst_->Reset();
-        pAst_->SetStart({ intPosX, intPosZ });
-        pAst_->SetGoal({ PlayerState::GetPlayerPositionX(), PlayerState::GetPlayerPositionZ() });
-        pAst_->Adjacent(Move{ intPosX, intPosZ });
-        pAst_->Route({ PlayerState::GetPlayerPositionX(), PlayerState::GetPlayerPositionZ() });
-        route_ = pAst_->GetRoute();
-        route_.pop_back();
-
-    }
-
-    if (!route_.empty())
-    {
+        if (Math::GetDistance(PlayerState::GetPlayerPosition(), transform_.position_) > 10)
         {
-            if (route_.back().first > intPosX)
-            {
-                GoRight();
-            }
-            else if (route_.back().first < intPosX)
-            {
-                GoLeft();
-            }
+            route_.clear();
         }
+
+        if (Discover_)
         {
-            if (route_.back().second > intPosZ)
-            {
-                GoAbove();
-            }
-            else if (route_.back().second < intPosZ)
-            {
-                GoUnder();
-            }
+            route_.clear();
+            pAst_->Reset();
+            pAst_->SetStart({ intPosX, intPosZ });
+            pAst_->SetGoal({ PlayerState::GetPlayerPositionX(), PlayerState::GetPlayerPositionZ() });
+            pAst_->Adjacent(Move{ intPosX, intPosZ });
+            pAst_->Route({ PlayerState::GetPlayerPositionX(), PlayerState::GetPlayerPositionZ() });
+            route_ = pAst_->GetRoute();
+            route_.pop_back();
+
         }
-        route_.pop_back();
+
+        if (!route_.empty())
+        {
+            {
+                if (route_.back().first > intPosX)
+                {
+                    GoRight();
+                }
+                else if (route_.back().first < intPosX)
+                {
+                    GoLeft();
+                }
+            }
+            {
+                if (route_.back().second > intPosZ)
+                {
+                    GoAbove();
+                }
+                else if (route_.back().second < intPosZ)
+                {
+                    GoUnder();
+                }
+            }
+            route_.pop_back();
+        }
+
     }
 }
 

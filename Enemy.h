@@ -25,7 +25,14 @@ class Enemy : public Character
 	void Search();
 	//ƒvƒŒƒCƒ„[‚ğ’ÇÕ‚·‚é
 	void Chase();
+
+protected:
+
+	float Visibility;			//‹’ö
+	float SightWidth;		//‹ŠE‚ÌL‚³
+
 public:
 	Enemy(GameObject* parent);
+	Enemy(GameObject* parent, std::string name);
 	~Enemy();
 };

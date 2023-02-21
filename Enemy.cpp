@@ -2,38 +2,29 @@
 #include "AStar2D.h"
 #include "Engine/CsvReader.h"
 #include "Engine/Math.h"
+#include "Engine/Model.h"
 #include "PlayerState.h"
 #include "Stage.h"
 
 namespace
 {
     const XMVECTOR sight = { 0,0,1,0 };		//Ž‹üƒxƒNƒgƒ‹
-    const float Visibility = 7;				//Ž‹’ö
-    const float SightWidth = 0.5f;				//Ž‹ŠE‚ÌL‚³
 }
 
 void Enemy::Input()
 {
     CalcInSight();
 
-    //if (Count_++ >= 16)
-    {
+    if (Discover_ || !route_.empty())
+        Chase();
+    else
+        Search();
 
-        if (Discover_ || !route_.empty())
-            Chase();
-        else
-            Search();
-
-
-        Count_ = 0;
-    }
-
-   
 }
 
 void Enemy::Search()
 {
-    if (rand() % 16 < 1)
+    if (rand() % 32 <= 1)
     {
         if (rand() % 2 == 0)
             transform_.rotate_.y += 90;
@@ -90,10 +81,12 @@ void Enemy::Chase()
                 if (route_.back().first > intPosX)
                 {
                     GoRight();
+                    return;
                 }
                 else if (route_.back().first < intPosX)
                 {
                     GoLeft();
+                    return;
                 }
             }
             {
@@ -140,9 +133,18 @@ void Enemy::InitChild()
 }
 
 Enemy::Enemy(GameObject* parent)
+    :Enemy(parent, "Enemy")
+{
+}
+
+Enemy::Enemy(GameObject* parent, std::string name)
     :Character(parent, "Enemy"), pAst_(nullptr), Count_(0), Discover_(false), PrevIntX_(0), PrevIntZ_(0)
 {
     route_.clear();
+    MLoad(hModel_, "Assets\\Parrot.fbx");
+    transform_.rotate_.x = 90;
+    transform_.scale_ = { 0.3f, 0.3f, 0.3f };
+    srand((unsigned int)time(NULL));
 }
 
 Enemy::~Enemy()

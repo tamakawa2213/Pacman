@@ -1,5 +1,7 @@
 #include "PlayScene.h"
-#include "Enemy.h"
+#include "EnemyRed.h"
+#include "EnemyBlue.h"
+#include "EnemyOrange.h"
 #include "Stage.h"
 #include "Player.h"
 #include "Engine/Camera.h"
@@ -16,7 +18,9 @@ void PlayScene::Initialize()
 {
 	Instantiate<Stage>(this);
 	Instantiate<Player>(this);
-	Instantiate<Enemy>(this);
+	Instantiate<EnemyRed>(this);
+	Instantiate<EnemyOrange>(this);
+	Instantiate<EnemyBlue>(this);
 }
 
 //XV

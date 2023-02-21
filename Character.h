@@ -6,12 +6,11 @@ class Stage;
 //◆◆◆を管理するクラス
 class Character : public GameObject
 {
-    int hModel_;    //モデル番号
     XMVECTOR front_;//奥向きのベクトル
     float checkZ_;
-    //XMVECTOR vMove;
 
 protected:
+    int hModel_;    //モデル番号
     virtual void Input() = 0;
     void GoAbove();
     void GoUnder();

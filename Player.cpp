@@ -1,5 +1,6 @@
 #include "Player.h"
 #include "Engine/Input.h"
+#include "Engine/Model.h"
 #include "PlayerState.h"
 
 void Player::Input()
@@ -32,6 +33,7 @@ Player::Player(GameObject* parent)
 	:Character(parent, "Player")
 {
     PlayerState::SetPlayerPosition(transform_.position_);
+    MLoad(hModel_, "Assets\\player.fbx");
 }
 
 Player::~Player()

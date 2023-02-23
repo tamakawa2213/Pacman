@@ -13,6 +13,9 @@ class Enemy : public Character
 	int PrevIntX_;
 	int PrevIntZ_;
 
+	int ChaseCount_;
+	int Bored_;			//–O‚«‚É‚­‚³
+
 	std::list<std::pair<int, int>> route_;
 
 	void Input() override;
@@ -33,6 +36,6 @@ protected:
 
 public:
 	Enemy(GameObject* parent);
-	Enemy(GameObject* parent, std::string name);
+	Enemy(GameObject* parent, std::string name, float vis, float wid, int bored);
 	~Enemy();
 };

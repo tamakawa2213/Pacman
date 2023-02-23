@@ -31,7 +31,7 @@ class AStar2D
 
 	std::vector<std::vector<char>> MapData_;
 
-	float** ppCost_;
+	std::vector<std::vector<float>> ppCost_;
 
 	int totalMove_;	//‘ˆÚ“®‹——£
 

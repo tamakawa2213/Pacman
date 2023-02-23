@@ -114,7 +114,7 @@ void Character::Update()
 
     movingDist_ = XMVectorGetY(length);
 
-    intPosX = (int)(transform_.position_.x + 1);
+    intPosX = (int)(transform_.position_.x + 1.0f);
     intPosZ = (int)transform_.position_.z;
 
 }

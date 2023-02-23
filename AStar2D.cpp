@@ -11,11 +11,6 @@ AStar2D::AStar2D(short size) : MapSize_(size), Start_(), Goal_(), totalMove_(0),
 
 AStar2D::~AStar2D()
 {
-	for (int i = 0; i < MapSize_; i++)
-	{
-		SAFE_DELETE_ARRAY(ppCost_);
-	}
-	SAFE_DELETE_ARRAY(ppCost_);
 	Unexplored_.clear();
 	Explored_.clear();
 	Routelist_.clear();
@@ -26,6 +21,7 @@ void AStar2D::SetStart(std::pair<int, int> start)
 {
 	Start_ = start;
 	ppCost_[Start_.first][Start_.second] = 0;
+	Unexplored_.remove({ Start_.first, Start_.second });
 }
 
 void AStar2D::SetGoal(std::pair<int, int> goal)
@@ -72,12 +68,13 @@ bool AStar2D::Passable(int X, int Z)
 
 void AStar2D::Initialize()
 {
-	ppCost_ = new float* [MapSize_];
-	//ppMapData_ = new char* [MapSize_];
 	for (int i = 0; i < MapSize_; i++)
 	{
-		ppCost_[i] = new float[MapSize_];
-		//ppMapData_[i] = new char[MapSize_];
+		ppCost_.push_back({ (float)CostMax_ });
+		for (int j = 1; j < MapSize_; j++)
+		{
+			ppCost_[i].push_back({ (float)CostMax_ });
+		}
 	}
 }
 
@@ -113,17 +110,18 @@ void AStar2D::Adjacent(Move next)
 				//ƒS[ƒ‹‚È‚ç‚Î’TõI—¹
 				if (GetDistance(nextpos) < 0.1f)
 				{
-					Explored_.push_back({ next.moveLR, next.moveHL });
+					Explored_.push_back({ nextW, nextH });
 					return;
 				}
 				IsSearched = true;
 				ex.push_back(nextpos);
+
+				Unexplored_.remove({ nextW, nextH });
+				Explored_.push_back({ nextW, nextH });
 			}
 		}
 	}
 
-	Unexplored_.remove({ next.moveLR, next.moveHL });
-	Explored_.push_back({ next.moveLR, next.moveHL });
 	std::pair<float, std::pair<int, int>> Min;
 	Min.first = CostMax_;
 	Min.second = std::pair<int, int>(0, 0);
@@ -229,4 +227,5 @@ void AStar2D::Reset()
 	}
 	Explored_.clear();
 	Routelist_.clear();
+	totalMove_ = 0;
 }

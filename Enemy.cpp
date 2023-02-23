@@ -13,12 +13,18 @@ namespace
 
 void Enemy::Input()
 {
-    CalcInSight();
+    if (++Count_ > 8)
+        Count_ = 0;
+    
+    if (Count_ == 0)
+    {
+        CalcInSight();
 
-    if (Discover_ || !route_.empty())
-        Chase();
-    else
-        Search();
+        if (Discover_ || !route_.empty())
+            Chase();
+        else
+            Search();
+    }
 
 }
 
@@ -45,7 +51,7 @@ void Enemy::Search()
 
 void Enemy::Chase()
 {
-    if (movingDist_ <= 0)
+    if (!Discover_ && movingDist_ <= 0)
     {
         if (rand() % 2 == 0)
             transform_.rotate_.y += 90;
@@ -69,32 +75,33 @@ void Enemy::Chase()
             pAst_->SetStart({ intPosX, intPosZ });
             pAst_->SetGoal({ PlayerState::GetPlayerPositionX(), PlayerState::GetPlayerPositionZ() });
             pAst_->Adjacent(Move{ intPosX, intPosZ });
-            pAst_->Route({ PlayerState::GetPlayerPositionX(), PlayerState::GetPlayerPositionZ() });
+            //pAst_->Route({ PlayerState::GetPlayerPositionX(), PlayerState::GetPlayerPositionZ() });
+            pAst_->Route({ intPosX, intPosZ });
             route_ = pAst_->GetRoute();
-            route_.pop_back();
+            //route_.pop_back();
 
         }
 
         if (!route_.empty())
         {
             {
-                if (route_.back().first > intPosX)
+                if (route_.front().first > intPosX)
                 {
                     GoRight();
                     return;
                 }
-                else if (route_.back().first < intPosX)
+                else if (route_.front().first < intPosX)
                 {
                     GoLeft();
                     return;
                 }
             }
             {
-                if (route_.back().second > intPosZ)
+                if (route_.front().second > intPosZ)
                 {
                     GoAbove();
                 }
-                else if (route_.back().second < intPosZ)
+                else if (route_.front().second < intPosZ)
                 {
                     GoUnder();
                 }
@@ -110,7 +117,7 @@ void Enemy::InitChild()
     CsvReader csv;
     csv.Load("Assets\\Map.csv");
 
-    pAst_ = new AStar2D(csv.GetWidth());
+    pAst_ = new AStar2D((short)csv.GetWidth());
 
     std::vector<std::vector<char>> data;
     data.clear();
@@ -133,12 +140,13 @@ void Enemy::InitChild()
 }
 
 Enemy::Enemy(GameObject* parent)
-    :Enemy(parent, "Enemy")
+    :Enemy(parent, "Enemy", 7, 0.5f, 50)
 {
 }
 
-Enemy::Enemy(GameObject* parent, std::string name)
-    :Character(parent, "Enemy"), pAst_(nullptr), Count_(0), Discover_(false), PrevIntX_(0), PrevIntZ_(0)
+Enemy::Enemy(GameObject* parent, std::string name, float vis, float wid, int bored)
+    :Character(parent, "Enemy"), pAst_(nullptr), Count_(0), Discover_(false), PrevIntX_(0), PrevIntZ_(0),Visibility(vis), SightWidth(wid),
+    ChaseCount_(50), Bored_(bored)
 {
     route_.clear();
     MLoad(hModel_, "Assets\\Parrot.fbx");
@@ -177,9 +185,12 @@ void Enemy::CalcInSight()
         }
         Discover_ = true;
     }
-    else
+
+    if (Discover_ && --ChaseCount_ < 0)
     {
         Discover_ = false;
+        ChaseCount_ = Bored_;
+        transform_.rotate_.y += 180;
     }
 
 }

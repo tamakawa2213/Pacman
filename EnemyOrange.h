@@ -6,5 +6,7 @@ class EnemyOrange : public Enemy
 public:
 	EnemyOrange(GameObject* parent);
 	~EnemyOrange();
+
+	void Draw() override;
 };
 

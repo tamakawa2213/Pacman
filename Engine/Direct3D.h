@@ -25,6 +25,7 @@ namespace Direct3D
 	extern ID3D11Device* pDevice;			//デバイス
 	extern ID3D11DeviceContext* pContext;	//デバイスコンテキスト
 	extern int scrWidth, scrHeight;			//スクリーンの幅と高さ
+	extern IDXGISwapChain* pSwapChain;
 
 	//初期化
 	HRESULT Initialize(int winW, int winH, HWND hWnd);

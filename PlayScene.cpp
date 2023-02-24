@@ -6,6 +6,7 @@
 #include "Player.h"
 #include "Engine/Camera.h"
 #include "Engine/SceneManager.h"
+#include "Engine/Time/Time.h"
 
 //コンストラクタ
 PlayScene::PlayScene(GameObject* parent)
@@ -21,6 +22,9 @@ void PlayScene::Initialize()
 	Instantiate<EnemyRed>(this);
 	Instantiate<EnemyOrange>(this);
 	Instantiate<EnemyBlue>(this);
+
+	Time::Reset();
+	Time::UnLock();
 }
 
 //更新

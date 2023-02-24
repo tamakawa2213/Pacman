@@ -3,6 +3,8 @@
 #include "Engine/CsvReader.h"
 #include "Engine/Math.h"
 #include "Engine/Model.h"
+#include "Engine/SceneManager.h"
+#include "Engine/Time/Time.h"
 #include "PlayerState.h"
 #include "Stage.h"
 
@@ -13,11 +15,16 @@ namespace
 
 void Enemy::Input()
 {
-    if (++Count_ > 8)
-        Count_ = 0;
-    
-    if (Count_ == 0)
+    if (Math::GetDistance(PlayerState::GetPlayerPosition(), transform_.position_) < 0.5f)
     {
+        SCENE_CHANGE(SCENE_ID_RESULT);
+        Time::Lock();
+    }
+
+    if (++Count_ > 8)
+    {
+        Count_ = 0;
+
         CalcInSight();
 
         if (Discover_ || !route_.empty())
@@ -75,38 +82,36 @@ void Enemy::Chase()
             pAst_->SetStart({ intPosX, intPosZ });
             pAst_->SetGoal({ PlayerState::GetPlayerPositionX(), PlayerState::GetPlayerPositionZ() });
             pAst_->Adjacent(Move{ intPosX, intPosZ });
-            //pAst_->Route({ PlayerState::GetPlayerPositionX(), PlayerState::GetPlayerPositionZ() });
             pAst_->Route({ intPosX, intPosZ });
             route_ = pAst_->GetRoute();
-            //route_.pop_back();
 
         }
 
         if (!route_.empty())
         {
+            if(route_.front().first == intPosX && route_.front().second == intPosZ)
+                route_.pop_front();
+            else
             {
-                if (route_.front().first > intPosX)
+                if (route_.front().first != intPosX)
                 {
-                    GoRight();
-                    return;
+                    int distX = route_.front().first - intPosX;
+                    
+                    if (distX > 0)
+                        GoRight();
+                    else
+                        GoLeft();
                 }
-                else if (route_.front().first < intPosX)
+                else
                 {
-                    GoLeft();
-                    return;
+                    int distZ = route_.front().second - intPosZ;
+
+                    if (distZ > 0)
+                        GoAbove();
+                    else
+                        GoUnder();
                 }
             }
-            {
-                if (route_.front().second > intPosZ)
-                {
-                    GoAbove();
-                }
-                else if (route_.front().second < intPosZ)
-                {
-                    GoUnder();
-                }
-            }
-            route_.pop_back();
         }
 
     }

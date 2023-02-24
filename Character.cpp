@@ -48,6 +48,7 @@ void Character::Initialize()
     {
         transform_.position_.x = 0.5f;
         transform_.position_.z = 1.5f;
+        move_ *= 1.1f;
     }
     else
     {

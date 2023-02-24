@@ -26,7 +26,7 @@ void ResultScene::Update()
 
 void ResultScene::Draw()
 {
-	pText->Draw(XMFLOAT3( 0,50,0 ), "Score : %.3g", Time::GetTimef());
+	pText->Draw(XMFLOAT2( 0,50 ), "Score : %.3g", Time::GetTimef());
 }
 
 void ResultScene::Release()

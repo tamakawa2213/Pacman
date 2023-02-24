@@ -17,17 +17,9 @@ std::wstring Text::StringToWString(std::string str)
 	return Ret;
 }
 
-Text::Text(Font font, IDWriteFontCollection* fontcollection, DWRITE_FONT_WEIGHT fontweight, DWRITE_FONT_STYLE fontstyle, DWRITE_FONT_STRETCH fontstretch, FLOAT fontsize, WCHAR const* localename, DWRITE_TEXT_ALIGNMENT textalignment, D2D1_COLOR_F color)
+Text::~Text()
 {
-	Setting->font = font;
-	Setting->fontCollection = fontcollection;
-	Setting->fontWeight = fontweight;
-	Setting->fontStyle = fontstyle;
-	Setting->fontStretch = fontstretch;
-	Setting->fontSize = fontsize;
-	Setting->localeName = localename;
-	Setting->textAlignment = textalignment;
-	Setting->Color = color;
+	Release();
 }
 
 void Text::SetFont(FontData* set)
@@ -36,45 +28,6 @@ void Text::SetFont(FontData* set)
 	pTextFormat->SetTextAlignment(set->textAlignment);
 	pRT->CreateSolidColorBrush(set->Color, &pSolidBrush);
 }
-
-void Text::SetFont(Font font, IDWriteFontCollection* fontcollection, DWRITE_FONT_WEIGHT fontweight, DWRITE_FONT_STYLE fontstyle, DWRITE_FONT_STRETCH fontstretch, FLOAT fontsize, WCHAR const* localename, DWRITE_TEXT_ALIGNMENT textalignment, D2D1_COLOR_F color)
-{
-	pDWriteFactory->CreateTextFormat(FontList[(int)font], fontcollection, fontweight, fontstyle, fontstretch, fontsize, localename, &pTextFormat);
-	pTextFormat->SetTextAlignment(textalignment);
-	pRT->CreateSolidColorBrush(color, &pSolidBrush);
-}
-
-//template <typename ... Args>
-//void Text::Draw(XMFLOAT3 pos, const std::string& fmt, Args ... args)
-//{
-//	size_t len = std::snprintf(nullptr, 0, fmt.c_str(), args ...);
-//	std::vector<char> buf(len + 1);
-//	std::snprintf(&buf[0], len + 1, fmt.c_str(), args ...);
-//	
-//	//文字列の変換
-//	std::wstring wstr = StringToWString(std::string(&buf[0], &buf[0] + len));
-//
-//	//ターゲットサイズの取得
-//	D2D1_SIZE_F TargetSize = pRT->GetSize();
-//
-//	//テキストレイアウトを作成
-//	pDWriteFactory->CreateTextLayout(wstr.c_str(), (UINT32)wstr.size(), pTextFormat, TargetSize.width, TargetSize.height, &pTextLayout);
-//	assert(pTextLayout != nullptr);
-//
-//	//描画位置の確定
-//	D2D1_POINT_2F pounts;
-//	pounts.x = pos.x;
-//	pounts.y = pos.y;
-//
-//	//描画開始
-//	pRT->BeginDraw();
-//
-//	//描画処理
-//	pRT->DrawTextLayout(pounts, pTextLayout, pSolidBrush, D2D1_DRAW_TEXT_OPTIONS_NONE);
-//
-//	//描画終了
-//	pRT->EndDraw();
-//}
 
 void Text::Initialize()
 {

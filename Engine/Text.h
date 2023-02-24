@@ -4,9 +4,6 @@
 #include <DirectXMath.h>
 #include <dwrite.h>
 #include <string>
-#include <cstdio>
-#include <vector>
-#include <stdio.h>
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d2d1.lib")
@@ -72,7 +69,7 @@ class Text
     IDXGISurface* pBackBuffer = nullptr;
 
     //フォントデータ
-    FontData* Setting = new FontData();
+    FontData* Setting = nullptr;
 
     //string->wstring変換
     std::wstring StringToWString(std::string str);
@@ -83,62 +80,24 @@ public:
     //コンストラクタ
     Text(FontData* set) : Setting(set) {};
 
-    /// <summary>コンストラクタ</summary>
-    /// <param name="font">フォント名</param>
-    /// <param name="fontcollection">フォントコレクション</param>
-    /// <param name="fontweight">フォントの太さ</param>
-    /// <param name="fontstyle">フォントスタイル</param>
-    /// <param name="fontstretch">フォントの幅</param>
-    /// <param name="fontsize">フォントサイズ</param>
-    /// <param name="localename">ロケール名</param>
-    /// <param name="textalignment">テキストの配置</param>
-    /// <param name="color">フォントの色</param>
-    Text(Font font,
-        IDWriteFontCollection* fontcollection,
-        DWRITE_FONT_WEIGHT fontweight,
-        DWRITE_FONT_STYLE fontstyle,
-        DWRITE_FONT_STRETCH fontstretch,
-        FLOAT fontsize,
-        WCHAR const* localename,
-        DWRITE_TEXT_ALIGNMENT textalignment,
-        D2D1_COLOR_F color);
+    //デストラクタ
+    ~Text();
 
     //フォント設定
     void SetFont(FontData* set);
 
-    /// <summary>フォント設定</summary>
-    /// <param name="font">フォント名</param>
-    /// <param name="fontcollection">フォントコレクション</param>
-    /// <param name="fontweight">フォントの太さ</param>
-    /// <param name="fontstyle">フォントスタイル</param>
-    /// <param name="fontstretch">フォントの幅</param>
-    /// <param name="fontsize">フォントサイズ</param>
-    /// <param name="localename">ロケール名</param>
-    /// <param name="textalignment">テキストの配置</param>
-    /// <param name="color">フォントの色</param>
-    void SetFont(Font font,
-        IDWriteFontCollection* fontcollection,
-        DWRITE_FONT_WEIGHT fontweight,
-        DWRITE_FONT_STYLE fontstyle,
-        DWRITE_FONT_STRETCH fontstretch,
-        FLOAT fontsize,
-        WCHAR const* localename,
-        DWRITE_TEXT_ALIGNMENT textalignment,
-        D2D1_COLOR_F color);
-
     /// <summary>描画</summary>
-    /// <param name="str">表示したい文字列</param>
     /// <param name="pos">描画位置</param>
-    /// <param name="options">テキストの整形</param>
+    /// <param name="fmt">表示したい文字列</param>
     template <typename ... Args>
-    void Draw(XMFLOAT3 pos, const std::string& fmt, Args ... args)
+    void Draw(XMFLOAT2 pos, const std::string& fmt, Args ... args)
     {
         size_t len = snprintf(nullptr, 0, fmt.c_str(), args ...);
-        std::vector<char> buf(len + 1);
+        std::string buf;
         snprintf(&buf[0], len + 1, fmt.c_str(), args ...);
 
         //文字列の変換
-        std::wstring wstr = StringToWString(std::string(&buf[0], &buf[0] + len));
+        std::wstring wstr = StringToWString(buf);
 
         //ターゲットサイズの取得
         D2D1_SIZE_F TargetSize = pRT->GetSize();

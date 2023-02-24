@@ -44,7 +44,7 @@ void PlayScene::Update()
 //•`‰æ
 void PlayScene::Draw()
 {
-	pText->Draw(XMFLOAT3(0, 0, 0), "%.3g", Time::GetTimef());
+	pText->Draw(XMFLOAT2(0, 0), "%.3g", Time::GetTimef());
 }
 
 //ŠJ•ú

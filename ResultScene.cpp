@@ -16,6 +16,8 @@ void ResultScene::Initialize()
 	data->fontSize = 10;
 	pText = new Text(data);
 	pText->Initialize();
+
+	SAFE_DELETE(data);
 }
 
 void ResultScene::Update()
@@ -24,9 +26,11 @@ void ResultScene::Update()
 
 void ResultScene::Draw()
 {
-	pText->Draw(XMFLOAT3( 0,0,0 ), "Score : %g", Time::GetTimef());
+	pText->Draw(XMFLOAT3( 0,50,0 ), "Score : %.3g", Time::GetTimef());
 }
 
 void ResultScene::Release()
 {
+	SAFE_DELETE(pText);
+	SAFE_RELEASE(pText);
 }

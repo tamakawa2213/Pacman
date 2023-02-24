@@ -10,7 +10,7 @@
 
 //コンストラクタ
 PlayScene::PlayScene(GameObject* parent)
-	: GameObject(parent, "PlayScene")
+	: GameObject(parent, "PlayScene"), pText(nullptr)
 {
 }
 
@@ -25,6 +25,14 @@ void PlayScene::Initialize()
 
 	Time::Reset();
 	Time::UnLock();
+
+	FontData* data = new FontData();
+	data->fontSize = 5;
+	pText = new Text(data);
+	pText->Initialize();
+
+	//フォントデータを解放
+	SAFE_DELETE(data);
 }
 
 //更新
@@ -36,9 +44,12 @@ void PlayScene::Update()
 //描画
 void PlayScene::Draw()
 {
+	pText->Draw(XMFLOAT3(0, 0, 0), "%.3g", Time::GetTimef());
 }
 
 //開放
 void PlayScene::Release()
 {
+	SAFE_RELEASE(pText);
+	SAFE_DELETE(pText);
 }

@@ -4,8 +4,6 @@
 EnemyOrange::EnemyOrange(GameObject* parent)
 	:Enemy(parent, "EnemyOrange", 0, 1.0f, 0)
 {
-	Visibility = 0;
-	SightWidth = 1.0f;
 }
 
 EnemyOrange::~EnemyOrange()
